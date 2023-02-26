@@ -16,4 +16,4 @@ about:
 
 ---
 
-About this blog
+This is Aidan McMillan's CSCI 0451 blog
