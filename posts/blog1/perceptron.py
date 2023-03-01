@@ -13,13 +13,13 @@ class Perceptron:
         #Initiate w vector with random wieghts and bias
         self.w = np.random.rand(X_.shape[1])
         
+        y_ = 2*y-1
+        
         for num in range(max_steps):
-            i = np.random.randint(0, high=(X_.shape[0]-1)) #Choose random i
-            
-            y_ = 2*y[i]-1
-            
+            i = np.random.randint(0, high=(X_.shape[0]-1)) #Choose random i    
+
             #Update w using perceptron algorithm
-            self.w = self.w + (1*((y_*(self.w@X_[i]))<0))*(y_*X_[i])
+            self.w = self.w + (1*((y_[i]*(self.w@X_[i]))<0))*(y_[i]*X_[i])
             
             self.history.append(self.score(X_, y))
             

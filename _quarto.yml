@@ -4,14 +4,13 @@ project:
 
 website:
   title: "Aidan McMillan's Awesome CSCI 0451 Blog"
+  favicon: img/fav.png
   navbar:
     background: "#112a39"
     right:
       - about.qmd
       - icon: github
-        href: https://github.com/
-      - icon: twitter
-        href: https://twitter.com
+        href: https://github.com/AidMMcMillan/AidMMcMillan.github.io
 
 format:
   html:
