@@ -215,8 +215,8 @@ background-size: cover;
 
 
 <p><a href="https://github.com/AidMMcMillan/AidMMcMillan.github.io/tree/main/posts/blog1/perceptron.py">Link to source code</a></p>
-<section id="implimenting-the-perceptron-algorithm" class="level1">
-<h1>Implimenting the Perceptron Algorithm</h1>
+<section id="implementing-the-perceptron-algorithm" class="level1">
+<h1>Implementing the Perceptron Algorithm</h1>
 <p>In order to implement the perceptron algorithm in python, I created a perceptron class. Within that class I defined the fit method:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fit(<span class="va">self</span>, X, y, max_steps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Before iterating through the algorithm, I first made an array <span class="math inline">\(\tilde{\mathbf{X}} = [\mathbf{X}, \mathbf{1}]\)</span> and initialed the vector <span class="math inline">\(\tilde{\mathbf{w}}\)</span> with random values from <span class="math inline">\(0-1\)</span>:</p>
