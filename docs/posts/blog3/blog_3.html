@@ -221,16 +221,16 @@ background-size: cover;
 <section id="loading-and-preparing-data" class="level1">
 <h1>Loading and Preparing Data</h1>
 <p>In order to start working with the data, I first have to prepare it so it can be interpreted by the scikit-learn methods. The fist step is to access the data using the pandas library:</p>
-<div class="cell" data-execution_count="102">
+<div class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>train_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/middlebury-csci-0451/CSCI-0451/main/data/palmer-penguins/train.csv"</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>train <span class="op">=</span> pd.read_csv(train_url)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This is how that the first few rows of that data look:</p>
-<div class="cell" data-execution_count="103">
+<div class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>train.head(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="103">
+<div class="cell-output cell-output-display" data-execution_count="5">
 
 <div>
 
@@ -324,7 +324,7 @@ background-size: cover;
 </div>
 </div>
 <p>Now I have to prepare the qualitative featurs in the data set using <code>pd.get_dummies</code> for <code>Sex</code> and <code>Island</code> and a <code>LabelEncoder</code> for <code>Species</code>. I also removed all irrelevant features:</p>
-<div class="cell" data-execution_count="104">
+<div class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> LabelEncoder</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>le <span class="op">=</span> LabelEncoder()</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>le.fit(train[<span class="st">"Species"</span>])</span>
@@ -341,9 +341,9 @@ background-size: cover;
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>X_train, y_train <span class="op">=</span> prepare_data(train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now if we look at the data we can see that in much better condition to be processed:</p>
-<div class="cell" data-execution_count="105">
+<div class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X_train.head(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="105">
+<div class="cell-output cell-output-display" data-execution_count="7">
 
 <div>
 
@@ -428,7 +428,7 @@ background-size: cover;
 <section id="displaying-and-discussing-data" class="level1">
 <h1>Displaying and Discussing Data</h1>
 <p>Before choosing my features, I am going to display and discuss a few of the features in the data set in order to highlight some patterns in the data. First I will use the <code>seaborn</code> library to display the realationsip between <strong>flipper length</strong> and <strong>body mass</strong>.</p>
-<div class="cell" data-execution_count="106">
+<div class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the default theme</span></span>
@@ -443,8 +443,8 @@ background-size: cover;
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span><span class="st">"Flipper Length (mm)"</span>, y<span class="op">=</span><span class="st">"Body Mass (g)"</span>, col<span class="op">=</span><span class="st">"Sex"</span>,</span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    hue<span class="op">=</span><span class="st">"Species"</span></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="106">
-<pre><code>&lt;seaborn.axisgrid.FacetGrid at 0x7fd7aade17f0&gt;</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>&lt;seaborn.axisgrid.FacetGrid at 0x7fb7956e5a30&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <p><img src="blog_3_files/figure-html/cell-6-output-2.png" class="img-fluid"></p>
@@ -456,9 +456,9 @@ background-size: cover;
 <p>One other interesting obsrvation we can draw from this graph is that the male penguins tend to be larger then the female penguins.<br>
 <br>
 Now I will take a look at the amount of each species of Penguin on each island.</p>
-<div class="cell" data-execution_count="101">
+<div class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>train.groupby([<span class="st">"Island"</span>, <span class="st">"Species"</span>])[[<span class="st">"Species"</span>]].count().unstack(fill_value<span class="op">=</span><span class="dv">0</span>).stack()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="101">
+<div class="cell-output cell-output-display" data-execution_count="9">
 
 <div>
 
@@ -526,7 +526,7 @@ Now I will take a look at the amount of each species of Penguin on each island.<
 <section id="choosing-features" class="level1">
 <h1>Choosing Features</h1>
 <p>In order to choose the three features that could best classify by data, I used <code>sklearn</code> to implement cross validation using linear regression. I first found all possible combinations of one qualitative column and two quantitative columns and then calculated the scores of each combination. Lastly I found the combination with the highest score.</p>
-<div class="cell" data-execution_count="107">
+<div class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> combinations</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> cross_val_score</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
@@ -570,7 +570,7 @@ Now I will take a look at the amount of each species of Penguin on each island.<
 <section id="training-and-ploting-data-logistic-regression" class="level1">
 <h1>Training and Ploting Data (Logistic Regression)</h1>
 <p>Finally, I will train the logistic regression model on the data. In order to do so, I created a new column called <code>Island_Dream_No</code> which is the opposite of the <code>Island_Dream</code> column. That way I was able desplay all of the data using the <code>plot_regions</code> function defined <a href="https://github.com/AidMMcMillan/AidMMcMillan.github.io/blob/main/posts/blog3/plot_regions.py">here</a>.</p>
-<div class="cell" data-execution_count="131">
+<div class="cell" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plot_regions <span class="im">import</span> plot_regions</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -599,6 +599,31 @@ Now I will take a look at the amount of each species of Penguin on each island.<
 </div>
 </div>
 <p>Because the data is linearly seperable, we are able to reach a score of 1.0. It is also important to note that the data does not seem to be overfit. I think for this reason, linear regression without feature mapping is probably a good choice for a model as it does not “hug” the data. Furthermore, the data seems to be shaped in blobs that can be roughly seperated by linear decision boundries.</p>
+</section>
+<section id="test-data" class="level1">
+<h1>Test Data</h1>
+<p>Finaly, I am going to test to the model on our testing data. I loadd and prepared the data similarly to the training data, ran it thorugh the logistic regression model, then showed the score and plots of this data.</p>
+<div class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>test_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/middlebury-csci-0451/CSCI-0451/main/data/palmer-penguins/test.csv"</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>test <span class="op">=</span> pd.read_csv(test_url)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>X_test, y_test <span class="op">=</span> prepare_data(test)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>not_Island_Dream <span class="op">=</span> X_test[[<span class="st">"Island_Biscoe"</span>, <span class="st">"Island_Torgersen"</span>]].<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>X_test[<span class="st">"Island_Dream_No"</span>] <span class="op">=</span> not_Island_Dream</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>score <span class="op">=</span> LR.score(X_test[cols], y_test)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(score)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>plot_regions(LR, X_test[cols], y_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0.9852941176470589</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="blog_3_files/figure-html/cell-10-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>With a score of roughly 98%, this model is very acurate. We can see that the model likely did not overfit to the training data beause it only incorrectly predicted one penguin that was just above the decesion line for it’s correct species.</p>
 
 
 </section>

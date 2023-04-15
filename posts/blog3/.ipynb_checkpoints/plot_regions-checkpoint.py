@@ -1,34 +1,62 @@
-import numpy as np
+from matplotlib import pyplot as plt
 import pandas as pd
+import numpy as np
+from matplotlib.patches import Patch
 
-class Perceptron:
-    def __init__(self):
-        self.w = []
-        self.history = []
-        
-    def fit(self, X, y, max_steps = 1000):
-        #Create X_ vector = [X,1]
-        X_ = np.append(X, np.ones((X.shape[0], 1)), 1)
+def plot_regions(model, X, y):
+    
+    x0 = X[X.columns[0]]
+    x1 = X[X.columns[1]]
+    qual_features = X.columns[2:]
+    
+    fig, axarr = plt.subplots(1, len(qual_features), figsize = (7, 3))
 
-        #Initiate w vector with random wieghts and bias
-        self.w = np.random.rand(X_.shape[1])
-        
-        y_ = 2*y-1
-        
-        for num in range(max_steps):
-            i = np.random.randint(0, high=(X_.shape[0]-1)) #Choose random i    
+    x0_min = x0.min()-1
+    x0_max = x0.max()+1
+    x1_min = x1.min()-0.5
+    x1_max = x1.max()+0.5
+    
+    
+    # create a grid
+    grid_x = np.linspace(x0_min,x0_max,501)
+    grid_y = np.linspace(x1_min,x1_max,501)
+    xx, yy = np.meshgrid(grid_x, grid_y)
+    
+    XX = xx.ravel()
+    YY = yy.ravel()
 
-            #Update w using perceptron algorithm
-            self.w = self.w + (1*((y_[i]*(self.w@X_[i]))<0))*(y_[i]*X_[i])
-            
-            self.history.append(self.score(X_, y))
-            
-            if self.score(X_, y) == 1:
-                #Break if acurracy reaches 1
-                break
-            
-    def predict(self, X):
-        return 1*((X@self.w)>0)
+    for i in range(len(qual_features)):
+        axarr[i].set_xlim([x0_min, x0_max])
+        axarr[i].set_ylim([x1_min, x1_max])
         
-    def score(self, X, y):
-        return np.mean(1*(self.predict(X)==y))
+        XY = pd.DataFrame({
+            X.columns[0] : XX,
+            X.columns[1] : YY
+        })
+        
+        for j in qual_features:
+            XY[j] = 0
+        
+        XY[qual_features[i]] = 1
+
+        p = model.predict(XY)
+        p = p.reshape(xx.shape)
+        
+        # use contour plot to visualize the predictions
+        axarr[i].contourf(xx, yy, p, cmap = "jet", alpha = 0.2, vmin = 0, vmax = 2)
+        
+        ix = X[qual_features[i]] == 1
+        
+        # plot the data
+        axarr[i].scatter(x0[ix], x1[ix], c = y[ix], cmap = "jet", vmin = 0, vmax = 2)
+        
+        axarr[i].set(xlabel = X.columns[0], 
+                     ylabel  = X.columns[1])
+        
+        patches = []
+        for color, spec in zip(["red", "green", "blue"], ["Adelie", "Chinstrap", "Gentoo"]):
+            patches.append(Patch(color = color, label = spec))
+        
+        plt.legend(title = "Species", handles = patches, loc = "best")
+        
+        plt.tight_layout()
