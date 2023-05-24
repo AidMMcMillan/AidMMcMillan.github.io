@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Aidan McMillan">
-<meta name="dcterms.date" content="2023-05-17">
+<meta name="dcterms.date" content="2023-05-23">
 <meta name="description" content="In this blog post I will be training a model and auditing it to asses its bias.">
 
 <title>Aidan McMillan’s Awesome CSCI 0451 Blog - Blog 5: Auditing Allocative Bias</title>
@@ -199,7 +199,7 @@ background-size: cover;
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">May 17, 2023</p>
+        <p class="date">May 23, 2023</p>
       </div>
     </div>
       
@@ -217,11 +217,11 @@ background-size: cover;
 
 
 <p><a href="https://github.com/AidMMcMillan/AidMMcMillan.github.io/blob/main/posts/blog3">GitHub link</a></p>
-<p>In this blog post I will be training a model to predict income categories based on certain demographic characteristics and then auditing the model to asses its bias with respect to other demographic characteristics (in this case I will be assesing bias).</p>
+<p>In this blog post I will be training a model to predict income categories based on certain demographic characteristics and then auditing the model to asses its bias with respect to other demographic characteristics (in this case I will be assesing gender bias).</p>
 <section id="loading-and-preparing-data" class="level1">
 <h1>Loading and Preparing Data</h1>
 <p>In order to start working with the data, I first have to prepare it for training. In this blog post I will be using demographic data from the American Community Survey’s Public Use Microdata Sample (PUMS). This data is accesible thorugh the <code>folktables</code> package. I decided to work with Connecticut’s 2018 survey data, since that is the state I am from.</p>
-<div class="cell" data-execution_count="227">
+<div class="cell" data-execution_count="186">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> folktables <span class="im">import</span> ACSDataSource, BasicProblem, adult_filter</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -234,9 +234,9 @@ background-size: cover;
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>acs_data <span class="op">=</span> data_source.get_data(states<span class="op">=</span>[STATE], download<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This is how that the first few rows of that data look:</p>
-<div class="cell" data-execution_count="228">
+<div class="cell" data-execution_count="187">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>acs_data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="228">
+<div class="cell-output cell-output-display" data-execution_count="187">
 
 <div>
 
@@ -395,7 +395,7 @@ background-size: cover;
 </div>
 </div>
 <p>Now I will select only the relevant features from the dataset, using the reccomendations from the <a href="https://arxiv.org/pdf/2108.04884.pdf">paper</a> provided in the blog’s instructions.</p>
-<div class="cell" data-execution_count="229">
+<div class="cell" data-execution_count="188">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>possible_features <span class="op">=</span> [</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">"AGEP"</span>,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"COW"</span>,</span>
@@ -410,7 +410,7 @@ background-size: cover;
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    ]</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>acs_data[possible_features].head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="229">
+<div class="cell-output cell-output-display" data-execution_count="188">
 
 <div>
 
@@ -504,7 +504,7 @@ background-size: cover;
 <section id="data-observations" class="level3">
 <h3 class="anchored" data-anchor-id="data-observations">Data Observations</h3>
 <p>Now that the data is ready, I will define my problem using foklore’s <code>BasicProblem</code> class. Within the class I will create a target vector where 1 means the person makes avobe 50k/year and 0 means they make less than 50k/year. I also pass the data through a filter that removes any non-working adults.</p>
-<div class="cell" data-execution_count="230">
+<div class="cell" data-execution_count="189">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>features_to_use <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> possible_features <span class="cf">if</span> f <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"PINCP"</span>, <span class="st">"SEX"</span>]]</span>
@@ -524,8 +524,8 @@ background-size: cover;
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test, group_train, group_test <span class="op">=</span> train_test_split(</span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    features, label, group, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now I will convert the data to a <code>pandas DataFrame</code> to dig into describe some aspects of the data set.</p>
-<div class="cell" data-execution_count="231">
+<p>Now I will convert the data to a <code>pandas DataFrame</code> to dig into describe some aspects of the data set. First I will check the number of respondents in the data set and check what percentage of the respondants have an income over 50%.</p>
+<div class="cell" data-execution_count="190">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert data to pandas DataFrame</span></span>
@@ -537,118 +537,107 @@ background-size: cover;
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>n_respondents <span class="op">=</span> df.shape[<span class="dv">0</span>]</span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>n_over50k <span class="op">=</span> (y_train<span class="op">==</span><span class="dv">1</span>).<span class="bu">sum</span>()</span>
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of respondents used in model = </span><span class="sc">{</span>n_respondents<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of respondents used in data set = </span><span class="sc">{</span>n_respondents<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Percent respondents w/ income &gt; 50k/year = </span><span class="sc">{</span>(n_over50k<span class="op">/</span>n_respondents)<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="op">*</span><span class="dv">100</span><span class="sc">}</span><span class="ss">%"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Number of respondents used in model = 15828
+<pre><code>Number of respondents used in data set = 15828
 Percent respondents w/ income &gt; 50k/year = 48.05%</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="330">
+<p>As we can see from above, roughly half of the 15828 respondants reported that they had an income over 50k/year. Next I will split the data into male and female in order to see id there are discrepancies in the data based on sex.</p>
+<p><em>For the sake of this blog post I will be looking at binary gender, because that is the data available. Furthermore, because I am not sure how the data is collected, I do not know if the</em> <code>SEX</code> <em>feature refers to gender identity or biological sex.</em></p>
+<div class="cell" data-execution_count="191">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>gender_labels <span class="op">=</span> {<span class="dv">1</span>: <span class="st">"Male"</span>, <span class="dv">2</span>: <span class="st">"Female"</span>}</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Count the number of people in each group based on gender and income category</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>gb1 <span class="op">=</span> df.groupby([<span class="st">"group"</span>, <span class="st">"label"</span>]).size().unstack()</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>percentages <span class="op">=</span> df.groupby([<span class="st">'group'</span>])[<span class="st">'label'</span>].mean()</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>male_percent <span class="op">=</span> percentages[<span class="dv">1</span>]</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>female_percent <span class="op">=</span> percentages[<span class="dv">2</span>]</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>gb <span class="op">=</span> df.groupby([<span class="st">"group"</span>]).size()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"# of males: </span><span class="sc">{</span>gb[<span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"# of females: </span><span class="sc">{</span>gb[<span class="dv">2</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Count the number of people in each group based on gender and income category</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>gb1 <span class="op">=</span> df.groupby([<span class="st">"group"</span>, <span class="st">"label"</span>]).size().unstack()</span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(male_percent)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(female_percent)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the bar chart using Seaborn</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>sns.set_style(<span class="st">"whitegrid"</span>)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> gb1.plot(kind<span class="op">=</span><span class="st">"bar"</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>percentages <span class="op">=</span> df.groupby([<span class="st">'group'</span>])[<span class="st">'label'</span>].mean()</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>male_percent <span class="op">=</span> percentages[<span class="dv">1</span>]</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>female_percent <span class="op">=</span> percentages[<span class="dv">2</span>]</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">% of males &gt;50k/year: </span><span class="sc">{</span>male_percent<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"% of femmales &gt;50k/year: </span><span class="sc">{</span>female_percent<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Set labels and title</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Gender'</span>)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Number of Respondents'</span>)</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Number of Respondents in Each Group by Gender and Income Category'</span>)</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Set custom tick labels for gender</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels([<span class="st">'Male'</span>, <span class="st">'Female'</span>])</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Set legend</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>ax.legend([<span class="st">'&lt; 50K'</span>, <span class="st">'&gt; 50K'</span>])</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the plot</span></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the bar chart using Seaborn</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>sns.set_style(<span class="st">"whitegrid"</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> gb1.plot(kind<span class="op">=</span><span class="st">"bar"</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Set labels and title</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Gender"</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Number of Respondents"</span>)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Number of Respondents in Each Group by Gender and Income Category"</span>)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Set custom tick labels for gender</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels([<span class="st">"Male"</span>, <span class="st">"Female"</span>])</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Set legend</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>ax.legend([<span class="st">"&lt; 50K"</span>, <span class="st">"&gt; 50K"</span>])</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the plot</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.5481416812172611
-0.41101152368758004</code></pre>
+<pre><code># of males: 8018
+# of females: 7810
+
+% of males &gt;50k/year: 0.5481
+% of femmales &gt;50k/year: 0.411</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <p><img src="blog_5_files/figure-html/cell-7-output-2.png" class="img-fluid"></p>
 </div>
 </div>
-<div class="cell" data-execution_count="332">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gender_labels <span class="op">=</span> {<span class="dv">1</span>: <span class="st">'Male'</span>, <span class="dv">2</span>: <span class="st">'Female'</span>}</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>race_labels <span class="op">=</span> {</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"White"</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Black"</span>,</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="dv">6</span>: <span class="st">"Aisan"</span>,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">**</span><span class="bu">dict</span>.fromkeys([<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>], <span class="st">"Other"</span>),</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<p>These numbers and chart show a clear discrepancy between incomes of men and women. This may lead to allocative bias in certain implementations of this classification task, something I will talk about later in the blog post.</p>
+<p>Although I will be auditing for gender bias, it is important to look at various groups when assesing the data. Therefore, I will take a dive into the intersectional groupings of this data by looking at both race and gender. First, I will look at the number of people in each group by income and race.</p>
+<p><em>I will note that I combined the following least represented racial categories into one group called “other” in order to better visualise the data:</em></p>
+<ul>
+<li><em>American Indian alone</em></li>
+<li><em>Alaska Native alone</em></li>
+<li><em>American Indian and Alaska Native tribes specified, or American Indian or Alaska Native, not specified and no other race</em></li>
+<li><em>Native Hawaiian and Other Pacific Islander alone</em></li>
+<li><em>Some Other Race alone</em></li>
+<li><em>Two or More Races</em></li>
+</ul>
+<p><em>I did this in order to simplify visualisation. I understand the importance of including these groups as seperate in the data, and ackgnowledge there could be nuances lost by grouping them together. I thought this choice would make it easier for the reader to understand the data.</em></p>
+<p><em>Furthermore this data does not make the distinction between hispanic and non-hispanic respondents of each racial category. This could also lead to lost nuance when analyzing the data</em></p>
+<div class="cell" data-execution_count="192">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>race_labels <span class="op">=</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"White"</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Black"</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="dv">6</span>: <span class="st">"Aisan"</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">**</span><span class="bu">dict</span>.fromkeys([<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>], <span class="st">"Other"</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"Race"</span>] <span class="op">=</span> df[<span class="st">"RAC1P"</span>].<span class="bu">map</span>(race_labels)</span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Race'</span>] <span class="op">=</span> df[<span class="st">'RAC1P'</span>].<span class="bu">map</span>(race_labels)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>group_counts <span class="op">=</span> df.groupby([<span class="st">"group"</span>, <span class="st">"Race"</span>, <span class="st">"label"</span>]).size().unstack().fillna(<span class="dv">0</span>)</span>
 <span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Find percentage people in each gender and race group and check the percentage earning &gt; 50k/year</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>gb <span class="op">=</span> df.groupby([<span class="st">'group'</span>, <span class="st">'Race'</span>])[<span class="st">'label'</span>].mean().unstack()</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(gb)</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the bar chart using Seaborn</span></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>sns.set_style(<span class="st">"whitegrid"</span>)</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> gb.plot(kind<span class="op">=</span><span class="st">'bar'</span>)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Set labels and title</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Gender and Race'</span>)</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Proportion of Respondents'</span>)</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Proportion of Respondents Earning &gt; 50k per Year by Gender and Race'</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(group_counts)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the bar chart using Seaborn</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>sns.set_style(<span class="st">"whitegrid"</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> group_counts.plot(kind<span class="op">=</span><span class="st">"bar"</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Set labels and title</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Gender and Race"</span>)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Number of Respondents"</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Number of Respondents Earning &gt; 50k/year by Gender and Race"</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Set custom tick labels for gender and race</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels([(gender_labels[x[<span class="dv">0</span>]] <span class="op">+</span> <span class="st">', '</span> <span class="op">+</span> x[<span class="dv">1</span>]) <span class="cf">for</span> x <span class="kw">in</span> group_counts.index], rotation<span class="op">=</span><span class="dv">45</span>)</span>
 <span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Set custom tick labels for gender and race</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels([<span class="st">'Male'</span>, <span class="st">'Female'</span>], rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Set legend</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>ax.legend([<span class="st">"&lt; 50K"</span>, <span class="st">"&gt; 50K"</span>])</span>
 <span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the plot</span></span>
 <span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Race      Aisan     Black     Other     White
-group                                        
-1      0.591667  0.308411  0.248945  0.586404
-2      0.449721  0.290730  0.192225  0.438585</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="blog_5_files/figure-html/cell-8-output-2.png" class="img-fluid"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="320">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Count the number of people in each group based on gender, race, and income category</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>group_counts <span class="op">=</span> df.groupby([<span class="st">'group'</span>, <span class="st">'Race'</span>, <span class="st">'label'</span>]).size().unstack().fillna(<span class="dv">0</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(group_counts)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the bar chart using Seaborn</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>sns.set_style(<span class="st">"whitegrid"</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> group_counts.plot(kind<span class="op">=</span><span class="st">'bar'</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Set labels and title</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Gender and Race'</span>)</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Number of Respondents'</span>)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Number of Respondents Earning &gt; 50k/year by Gender and Race'</span>)</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Set custom tick labels for gender and race</span></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels([(gender_labels[x[<span class="dv">0</span>]] <span class="op">+</span> <span class="st">', '</span> <span class="op">+</span> x[<span class="dv">1</span>]) <span class="cf">for</span> x <span class="kw">in</span> group_counts.index], rotation<span class="op">=</span><span class="dv">45</span>)</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Set legend</span></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>ax.legend([<span class="st">'&lt; 50K'</span>, <span class="st">'&gt; 50K'</span>])</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the plot</span></span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>label        False  True 
 group Race               
@@ -662,19 +651,51 @@ group Race
       White   3524   2753</code></pre>
 </div>
 <div class="cell-output cell-output-display">
+<p><img src="blog_5_files/figure-html/cell-8-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>This graph clearly shows that there are is low representation of minority races in the dataset. This could definately lead to a decreasing classification accuracy for minority groups. We can also see a discrepency issue in incomes between white and asian respondents and respondents in the other groups. This becomes even more clear in the next graph:</p>
+<div class="cell" data-execution_count="193">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find percentage people in each gender and race group and check the percentage earning &gt; 50k/year</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>gb_race <span class="op">=</span> df.groupby([<span class="st">"group"</span>, <span class="st">"Race"</span>])[<span class="st">"label"</span>].mean().unstack()</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(gb_race)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the bar chart using Seaborn</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>sns.set_style(<span class="st">"whitegrid"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> gb_race.plot(kind<span class="op">=</span><span class="st">"bar"</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Set labels and title</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Gender and Race"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Proportion of Respondents"</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Proportion of Respondents Earning &gt; 50k per Year by Gender and Race"</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Set custom tick labels for gender and race</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels([<span class="st">"Male"</span>, <span class="st">"Female"</span>], rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the plot</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Race      Aisan     Black     Other     White
+group                                        
+1      0.591667  0.308411  0.248945  0.586404
+2      0.449721  0.290730  0.192225  0.438585</code></pre>
+</div>
+<div class="cell-output cell-output-display">
 <p><img src="blog_5_files/figure-html/cell-9-output-2.png" class="img-fluid"></p>
 </div>
 </div>
+<p>This graph shows the percentage of people in each group that earn above 50k/year. As we can see there is a huge descrepancy between asian and white respondents and black respondents. Because we are training on racial data, I think it is important to note that such an algorithm could be exptremely problematic because race is being directly used as a factor to predict income.</p>
 </section>
 </section>
 <section id="training-model" class="level1">
 <h1>Training Model</h1>
-<p>Now that my data is prepared, its time to train the model!</p>
-<div class="cell" data-execution_count="321">
+<p>Now that my data is prepared, its time to train the model! I will be using <code>sklearn</code>’s logistic regression model.</p>
+<div class="cell" data-execution_count="194">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> make_pipeline</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> classification_report, confusion_matrix</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> make_pipeline(StandardScaler(), LogisticRegression())</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>model.fit(X_train, y_train)</span>
@@ -682,127 +703,182 @@ group Race
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>y_hat <span class="op">=</span> model.predict(X_test)</span>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>acc <span class="op">=</span> (y_hat <span class="op">==</span> y_test).mean()</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Overall ccuracy = </span><span class="sc">{</span>acc<span class="sc">.</span><span class="bu">round</span>(<span class="dv">8</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, y_hat)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Overall accuracy = </span><span class="sc">{</span>acc<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Confusion matrix =</span><span class="ch">\n</span><span class="ss">"</span>, cm)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>TN <span class="op">=</span> cm[<span class="dv">0</span>][<span class="dv">0</span>]</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>FP <span class="op">=</span> cm[<span class="dv">0</span>][<span class="dv">1</span>]</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>FN <span class="op">=</span> cm[<span class="dv">1</span>][<span class="dv">0</span>]</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>TP <span class="op">=</span> cm[<span class="dv">1</span>][<span class="dv">1</span>]</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>PPV <span class="op">=</span> TP<span class="op">/</span>(FP<span class="op">+</span>TP)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>FPR <span class="op">=</span> FP<span class="op">/</span>(FP<span class="op">+</span>TN)</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>FNR <span class="op">=</span> FN<span class="op">/</span>(FN<span class="op">+</span>TP)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">PPV = </span><span class="sc">{</span>PPV<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"FPR = </span><span class="sc">{</span>FPR<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"FNR = </span><span class="sc">{</span>FNR<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Overall ccuracy = 0.76926965</code></pre>
+<pre><code>Overall accuracy = 0.7693
+
+Confusion matrix =
+ [[1626  473]
+ [ 440 1418]]
+
+PPV = 0.7499
+FPR = 0.2253
+FNR = 0.2368</code></pre>
 </div>
 </div>
-<p>Now, I can test the acuraccy for male and female to see if there are any discrepencies. <em>For the sake of this test I will be looking at binary gender, because that is the data available. Furthermore, because I am not sure how the data is collected, I do not know if the</em> <code>SEX</code> <em>feature refers to gender identity or biological sex.</em></p>
-<div class="cell" data-execution_count="322">
+<p>Above we see that the accuracy of the of the model was around 77%. From the classification report we see that the precision (also known as positive predictive value) is 0.75. Furthermore, the false positve rate is 0.23 and the false negative rate is 0.24. This model does a pretty good job at predicting income categories based on demographic factors, excluding gender.</p>
+</section>
+<section id="auditing-for-bias" class="level1">
+<h1>Auditing for Bias</h1>
+<p>Now, I can test the acuraccy for male and female to see if there are any discrepencies in accuracy, PPV or false negative and positive rates.</p>
+<div class="cell" data-execution_count="195">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>acc_male <span class="op">=</span> (y_hat <span class="op">==</span> y_test)[group_test <span class="op">==</span> <span class="dv">1</span>].mean()</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>acc_fem <span class="op">=</span> (y_hat <span class="op">==</span> y_test)[group_test <span class="op">==</span> <span class="dv">2</span>].mean()</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Male accuracy = </span><span class="sc">{</span>acc_male<span class="sc">.</span><span class="bu">round</span>(<span class="dv">8</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Female accuracy = </span><span class="sc">{</span>acc_fem<span class="sc">.</span><span class="bu">round</span>(<span class="dv">8</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>y_test_male, y_hat_male <span class="op">=</span> y_test[group_test <span class="op">==</span> <span class="dv">1</span>], y_hat[group_test <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>y_test_fem, y_hat_fem <span class="op">=</span> y_test[group_test <span class="op">==</span> <span class="dv">2</span>], y_hat[group_test <span class="op">==</span> <span class="dv">2</span>]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>cm_m <span class="op">=</span> confusion_matrix(y_test_male, y_hat_male)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Male accuracy = </span><span class="sc">{</span>acc_male<span class="sc">.</span><span class="bu">round</span>(<span class="dv">8</span>)<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Confusion matrix =</span><span class="ch">\n</span><span class="ss">"</span>, cm_m)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>TN_m <span class="op">=</span> cm_m[<span class="dv">0</span>][<span class="dv">0</span>]</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>FP_m <span class="op">=</span> cm_m[<span class="dv">0</span>][<span class="dv">1</span>]</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>FN_m <span class="op">=</span> cm_m[<span class="dv">1</span>][<span class="dv">0</span>]</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>TP_m <span class="op">=</span> cm_m[<span class="dv">1</span>][<span class="dv">1</span>]</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>PPV_m <span class="op">=</span> TP_m<span class="op">/</span>(FP_m<span class="op">+</span>TP_m)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>FPR_m <span class="op">=</span> FP_m<span class="op">/</span>(FP_m<span class="op">+</span>TN_m)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>FNR_m <span class="op">=</span> FN_m<span class="op">/</span>(FN_m<span class="op">+</span>TP_m)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">PPV = </span><span class="sc">{</span>PPV_m<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"FPR = </span><span class="sc">{</span>FPR_m<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"FNR = </span><span class="sc">{</span>FNR_m<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>cm_f <span class="op">=</span> confusion_matrix(y_test_fem, y_hat_fem)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Female accuracy = </span><span class="sc">{</span>acc_fem<span class="sc">.</span><span class="bu">round</span>(<span class="dv">8</span>)<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Confusion matrix =</span><span class="ch">\n</span><span class="ss">"</span>, cm_f)</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>TN_f <span class="op">=</span> cm_f[<span class="dv">0</span>][<span class="dv">0</span>]</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>FP_f <span class="op">=</span> cm_f[<span class="dv">0</span>][<span class="dv">1</span>]</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>FN_f <span class="op">=</span> cm_f[<span class="dv">1</span>][<span class="dv">0</span>]</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>TP_f <span class="op">=</span> cm_f[<span class="dv">1</span>][<span class="dv">1</span>]</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>PPV_f <span class="op">=</span> TP_f<span class="op">/</span>(FP_f<span class="op">+</span>TP_f)</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>FPR_f <span class="op">=</span> FP_f<span class="op">/</span>(FP_f<span class="op">+</span>TN_f)</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>FNR_f <span class="op">=</span> FN_f<span class="op">/</span>(FN_f<span class="op">+</span>TP_f)</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">PPV = </span><span class="sc">{</span>PPV_f<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"FPR = </span><span class="sc">{</span>FPR_f<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"FNR = </span><span class="sc">{</span>FNR_f<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Male accuracy = 0.78973346
-Female accuracy = 0.74779907</code></pre>
+
+Confusion matrix =
+ [[735 166]
+ [260 865]]
+
+PPV = 0.839
+FPR = 0.1842
+FNR = 0.2311
+
+Female accuracy = 0.74779907
+
+Confusion matrix =
+ [[891 307]
+ [180 553]]
+
+PPV = 0.643
+FPR = 0.2563
+FNR = 0.2456</code></pre>
 </div>
 </div>
-<p>As we can see, the acuracy for this model is significantly higher when predicting high i</p>
+<p>As we can see, the acuracy for this model is significantly higher when predicting income for males than females. On top of that, the positive predictive value (PPV or precision) is way higher for males than females. Furthuremore, the false positive rate is significantly higher for women than for men. The false negative rate is also higher for females, but to a lesser extent.</p>
+<section id="bias-measures-discussion" class="level2">
+<h2 class="anchored" data-anchor-id="bias-measures-discussion">Bias measures discussion</h2>
+<section id="error-rate-balance" class="level4">
+<h4 class="anchored" data-anchor-id="error-rate-balance">Error Rate Balance</h4>
+<p>From above we see that there is a large discrepancy between the false positive error rates between males and femailes. That means that this model does not pass the error rate balance test.</p>
 </section>
-<section id="choosing-features" class="level1">
-<h1>Choosing Features</h1>
-<p>In order to choose the three features that could best classify by data, I used <code>sklearn</code> to implement cross validation using linear regression. I first found all possible combinations of one qualitative column and two quantitative columns and then calculated the scores of each combination. Lastly I found the combination with the highest score.</p>
-<div class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> combinations</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> cross_val_score</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>all_qual_cols <span class="op">=</span> [<span class="st">"Clutch Completion_No"</span>, <span class="st">"Clutch Completion_Yes"</span>, <span class="st">"Sex_FEMALE"</span>, <span class="st">"Sex_MALE"</span>, <span class="st">"Island_Biscoe"</span>, <span class="st">"Island_Dream"</span>, <span class="st">"Island_Torgersen"</span>]</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>all_quant_cols <span class="op">=</span> [<span class="st">"Culmen Length (mm)"</span>, <span class="st">"Culmen Depth (mm)"</span>, <span class="st">"Flipper Length (mm)"</span>, <span class="st">"Body Mass (g)"</span>]</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>scored_cols <span class="op">=</span> []</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>LR <span class="op">=</span> LogisticRegression(max_iter <span class="op">=</span> <span class="dv">750</span>)</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Find all posible combinations of one qual. column and two quant. columns</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> qual <span class="kw">in</span> all_qual_cols: </span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    qual_cols <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> X_train.columns <span class="cf">if</span> qual <span class="kw">in</span> col ]</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> pair <span class="kw">in</span> combinations(all_quant_cols, <span class="dv">2</span>):</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>        cols <span class="op">=</span> qual_cols <span class="op">+</span> <span class="bu">list</span>(pair)</span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Falculate each combination's scores using linear regression and cross validation</span></span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        scores <span class="op">=</span> cross_val_score(LR, X_train[cols], y_train, cv<span class="op">=</span><span class="dv">5</span>)</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        scored_cols.append([cols, scores.mean()])</span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>best_score <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Find combination w/ highest score</span></span>
-<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> scored_cols:</span>
-<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row[<span class="dv">1</span>] <span class="op">&gt;</span> best_score:</span>
-<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        best_cols <span class="op">=</span> row[<span class="dv">0</span>]</span>
-<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        best_score <span class="op">=</span> row[<span class="dv">1</span>]</span>
-<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(best_cols, best_score)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="calibration" class="level4">
+<h4 class="anchored" data-anchor-id="calibration">Calibration</h4>
+<p>Below, I calculated and plotted the fraction of respondents whose predicted income was over 50k/year that actually had an income over 50k/year:</p>
+<div class="cell" data-execution_count="196">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df_male <span class="op">=</span> pd.DataFrame(np.array([y_test_male, y_hat_male]).T, columns<span class="op">=</span>[<span class="st">"income"</span>, <span class="st">"income_pred"</span>])</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>df_fem <span class="op">=</span> pd.DataFrame(np.array([y_test_fem, y_hat_fem]).T, columns<span class="op">=</span>[<span class="st">"income"</span>, <span class="st">"income_pred"</span>])</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>gb_m <span class="op">=</span> df_male.groupby([<span class="st">"income_pred"</span>])[<span class="st">"income"</span>].mean()</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>gb_f <span class="op">=</span> df_fem.groupby([<span class="st">"income_pred"</span>])[<span class="st">"income"</span>].mean()</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>calibration <span class="op">=</span> [[gb_m[<span class="dv">0</span>], gb_f[<span class="dv">0</span>]],</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>               [gb_m[<span class="dv">1</span>], gb_f[<span class="dv">1</span>]]]</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(np.matrix(calibration))</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>df_calib <span class="op">=</span> pd.DataFrame(calibration, columns<span class="op">=</span>[<span class="st">'Male'</span>, <span class="st">'Female'</span>], index<span class="op">=</span>[<span class="st">'False'</span>, <span class="st">'True'</span>])</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>df_calib <span class="op">=</span> df_calib.reset_index().melt(<span class="st">'index'</span>)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the bar chart using Seaborn</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>sns.set_style(<span class="st">"whitegrid"</span>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> sns.barplot(x<span class="op">=</span><span class="st">'index'</span>, y<span class="op">=</span><span class="st">'value'</span>, hue<span class="op">=</span><span class="st">'variable'</span>, data<span class="op">=</span>df_calib)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Set labels and title</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Predicted income &gt;50k/year'</span>)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Percent &gt;50k/year'</span>)</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Calibration of Predicted Values by Gender'</span>)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the plot</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>['Island_Dream', 'Culmen Length (mm)', 'Culmen Depth (mm)'] 0.988310708898944</code></pre>
-</div>
-</div>
-<p>As we can see the <code>Island_Dream</code>, <code>Culmen Length (mm)</code>, and <code>Culmen Depth (mm)</code> columns seem to do the best job at classifying the data. The image below by <span class="citation" data-cites="allison_horst">@allison_horst</span> shows what the culmen length and depth refer to.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="culmen_depth.png" class="img-fluid figure-img" style="width:50.0%"></p>
-<p></p><figcaption class="figure-caption">Culmen length and depth refers to the length and height of the penguin’s beak</figcaption><p></p>
-</figure>
-</div>
-</section>
-<section id="training-and-ploting-data-logistic-regression" class="level1">
-<h1>Training and Ploting Data (Logistic Regression)</h1>
-<p>Finally, I will train the logistic regression model on the data. In order to do so, I created a new column called <code>Island_Dream_No</code> which is the opposite of the <code>Island_Dream</code> column. That way I was able desplay all of the data using the <code>plot_regions</code> function defined <a href="https://github.com/AidMMcMillan/AidMMcMillan.github.io/blob/main/posts/blog3/plot_regions.py">here</a>.</p>
-<div class="cell" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plot_regions <span class="im">import</span> plot_regions</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create column that is the opposite of "Island_Dream" in order to plot regions</span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>not_Island_Dream <span class="op">=</span> X_train[[<span class="st">"Island_Biscoe"</span>, <span class="st">"Island_Torgersen"</span>]].<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>X_train[<span class="st">"Island_Dream_No"</span>] <span class="op">=</span> not_Island_Dream</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> [<span class="st">"Culmen Length (mm)"</span>, <span class="st">"Culmen Depth (mm)"</span>, <span class="st">"Island_Dream"</span>, <span class="st">"Island_Dream_No"</span>]</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>LR <span class="op">=</span> LogisticRegression()</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>LR.fit(X_train[cols], y_train)</span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>score <span class="op">=</span> LR.score(X_train[cols], y_train)</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"default"</span>, category<span class="op">=</span><span class="pp">FutureWarning</span>)</span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(score)</span>
-<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>plot_regions(LR, X_train[cols], y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>1.0</code></pre>
+<pre><code>[[0.26130653 0.16806723]
+ [0.83899127 0.64302326]]</code></pre>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="blog_5_files/figure-html/cell-13-output-2.png" class="img-fluid"></p>
+<p><img src="blog_5_files/figure-html/cell-12-output-2.png" class="img-fluid"></p>
 </div>
 </div>
-<p>Because the data is linearly seperable, we are able to reach a score of 1.0. It is also important to note that the data does not seem to be overfit. I think for this reason, linear regression without feature mapping is probably a good choice for a model as it does not “hug” the data. Furthermore, the data seems to be shaped in blobs that can be roughly seperated by linear decision boundries.</p>
+<p>As we can see our model is not that well calibrated. The odds that a female who is predicted to have an income above 50k/year actualy has that income is around 64%, whereas for males that number is 84%. Interestingly, this calibration shows somewhat of a bias towards females because women who are predicted to have higher incomes are more likely than men to actually earn less than 50k/year.</p>
 </section>
-<section id="test-data" class="level1">
-<h1>Test Data</h1>
-<p>Finaly, I am going to test to the model on our testing data. I loadd and prepared the data similarly to the training data, ran it thorugh the logistic regression model, then showed the score and plots of this data.</p>
-<div class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>test_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/middlebury-csci-0451/CSCI-0451/main/data/palmer-penguins/test.csv"</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>test <span class="op">=</span> pd.read_csv(test_url)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>X_test, y_test <span class="op">=</span> prepare_data(test)</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>not_Island_Dream <span class="op">=</span> X_test[[<span class="st">"Island_Biscoe"</span>, <span class="st">"Island_Torgersen"</span>]].<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>X_test[<span class="st">"Island_Dream_No"</span>] <span class="op">=</span> not_Island_Dream</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>score <span class="op">=</span> LR.score(X_test[cols], y_test)</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(score)</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>plot_regions(LR, X_test[cols], y_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="statistical-parity" class="level4">
+<h4 class="anchored" data-anchor-id="statistical-parity">Statistical Parity</h4>
+<p>Below I calculated the percentage of each gender group that was predicted to have an income over 50k/year.</p>
+<div class="cell" data-execution_count="208">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Male acceptance rate = </span><span class="sc">{</span>(y_hat_male.<span class="bu">sum</span>()<span class="op">/</span><span class="bu">len</span>(y_test_male))<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Feale acceptance rate = </span><span class="sc">{</span>(y_hat_fem.<span class="bu">sum</span>()<span class="op">/</span><span class="bu">len</span>(y_test_fem))<span class="sc">.</span><span class="bu">round</span>(<span class="dv">4</span>)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.9852941176470589</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="blog_5_files/figure-html/cell-14-output-2.png" class="img-fluid"></p>
+<pre><code>Male acceptance rate = 0.5089
+Feale acceptance rate = 0.4454</code></pre>
 </div>
 </div>
-<p>With a score of roughly 98%, this model is very acurate. We can see that the model likely did not overfit to the training data beause it only incorrectly predicted one penguin that was just above the decesion line for it’s correct species.</p>
+<p>As we can see, there is also a significant discrepancy for statistical parity that shows bias against women. The algorithm predicts more women to fall into the lower income bracket.</p>
+</section>
+</section>
+</section>
+<section id="concluding-discussion" class="level1">
+<h1>Concluding Discussion</h1>
+<p><strong>What groups of people could stand to benefit from a system that is able to predict the label you predicted, such as income or employment status? For example, what kinds of companies might want to buy your model for commercial use?</strong></p>
+<p>There are multiple ways that a model that predicts income based on demographic feature could be used. Here are two ideas I had:</p>
+<ol type="1">
+<li><p>Companies could use income prediction algorithms to tailor their marketing strategies and campaigns. By understanding the income levels of their target audience, businesses can customize their offerings, pricing, and promotional activities to better suit the preferences and purchasing power of different income groups.</p></li>
+<li><p>Human resources departments could use income prediction models when assessing job applicants. Through such algorithm, employers can gain insights into a candidate’s potential salary expectations. This information could help inform job offers.</p></li>
+<li><p>Governments and policymakers could utilize income prediction algorithms to plan and evaluate social policies. For instance, by estimating income levels for a specific population, policymakers can identify groups that may require targeted support.</p></li>
+</ol>
+<p><strong>Based on your bias audit, what could be the impact of deploying your model for large-scale prediction in commercial or governmental settings?</strong></p>
+<ol type="1">
+<li><p>This case would be the least problematic in my opinion. Nevertheless, the bias in my algorithm could lead companies marketing more “incorrect” products to women than men.</p></li>
+<li><p>This case could prove detrimental. Bias in an algorithm that predicts income in the case of hiring could mean that women would be offered a lower salary upon accepting a job. My algorithm did not pass the statistical parity test, meaning that it more often places women in the lower income bracket. Nevertheless, in the calibration section, women were predicted to have higher incomes were more likely than men to be in the lower income bracket. I would argue that statistical parity matters more in this case because the effect of a negative prediction is worse than the effect of a positive prediction.</p></li>
+<li><p>This could also prove detrimental. If a government wrongly predicts the amount of need for a certain individual or comunity, they may be unable to povide the proper services. In this case the low acceptace rate for women in the statistical parity test coul actually mean that many women wouldn’t get the services they need because their income is being predicted too high.</p></li>
+</ol>
+<p><strong>Based on your bias audit, do you feel that your model displays problematic bias? What kind (calibration, error rate, etc)?</strong></p>
+<p>All of the bias audits were unsucessful and therefore I would conclude that this algorithm is demonstrates a highly problematic amount of bias and probably should not be utilized. It showed bias in calibration, error rate and statistical parity.</p>
+<p><strong>Beyond bias, are there other potential problems associated with deploying your model that make you uncomfortable? How would you propose addressing some of these problems?</strong></p>
+<p>Yes, as I said before, this model uses race as a predictor. I think this is highly problematic. There may be cases where race could be used as a predictor, perhaps for an algorithm that predicts certain medical conditions that may vary in prevelance between different races.</p>
+<p>On top of that, I think that this algorithm would just further the salary discrepancies we see between men and women today. I think that that is one of the biggest issues with predictive algorithms like these. They use data that shows trends based on a history of discrimination and opression and deppen those trends by predicting outcomes based on demographics without ackgnowledging the myriad of historical factors that created those outcomes.</p>
 
 
 </section>
